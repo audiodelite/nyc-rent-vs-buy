@@ -4,15 +4,140 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NYC Rent vs. Buy Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#FAF8F5;--surface:#fff;--surface2:#F5F2EE;--border:#E8E4DE;
+      --text:#1A1714;--text2:#6B645A;--text3:#9C958B;
+      --accent:#C45D3E;--accent2:#2D5F4A;--accent-light:#FFF0EB;--accent2-light:#E8F5EE;
+      --amber:#B8860B;--amber-light:#FFF8E7;
+      --radius:10px;--radius-lg:16px;
     }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.5}
+    h1,h2,h3,.serif{font-family:'DM Serif Display',Georgia,serif;font-weight:400}
+    input,select,button{font-family:inherit}
+    input[type=number]{-moz-appearance:textfield}
+    input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    ::selection{background:var(--accent);color:#fff}
+
+    .wrap{max-width:1120px;margin:0 auto;padding:24px 20px}
+    @media(min-width:768px){.wrap{padding:40px 32px}}
+
+    /* Header */
+    .header{padding:48px 0 32px;text-align:center}
+    .header h1{font-size:clamp(28px,5vw,44px);color:var(--text);letter-spacing:-0.02em;line-height:1.15}
+    .header p{margin-top:8px;color:var(--text2);font-size:clamp(14px,2vw,16px);max-width:420px;margin-left:auto;margin-right:auto}
+    .header .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 10px;vertical-align:middle}
+    @media(min-width:768px){.header{padding:64px 0 40px}}
+
+    /* Tabs */
+    .tabs{display:flex;gap:2px;border-bottom:1.5px solid var(--border);margin-bottom:32px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{padding:12px 20px;border:none;background:none;cursor:pointer;font-size:14px;font-weight:500;color:var(--text3);white-space:nowrap;
+      border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all 0.2s}
+    .tab:hover{color:var(--text2)}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+    @media(min-width:768px){.tab{padding:14px 24px;font-size:15px}}
+
+    /* Cards */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px}
+    .card h3{font-size:18px;margin-bottom:16px;letter-spacing:-0.01em}
+    .card--accent{border-color:var(--accent);border-width:1.5px}
+    .card--accent2{border-color:var(--accent2);border-width:1.5px}
+    @media(min-width:768px){.card{padding:28px 32px}}
+
+    /* Inputs */
+    .field{margin-bottom:16px}
+    .field label{display:block;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+    .field-row{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface);transition:border-color 0.2s}
+    .field-row:focus-within{border-color:var(--accent)}
+    .field-row .pre,.field-row .suf{padding:8px 12px;font-size:13px;color:var(--text3);background:var(--surface2)}
+    .field-row input,.field-row select{flex:1;padding:10px 12px;border:none;outline:none;font-size:15px;background:transparent;color:var(--text);width:100%;min-width:0}
+    .field-row select{cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239C958B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+    .field .help{font-size:11px;color:var(--text3);margin-top:4px}
+
+    /* Grid layouts */
+    .grid-2{display:grid;gap:16px}
+    @media(min-width:640px){.grid-2{grid-template-columns:1fr 1fr}}
+    .grid-3{display:grid;gap:12px;grid-template-columns:1fr 1fr 1fr}
+    .sidebar-layout{display:grid;gap:24px}
+    @media(min-width:860px){.sidebar-layout{grid-template-columns:340px 1fr}.sidebar{max-height:82vh;overflow-y:auto;scrollbar-width:thin}}
+
+    /* Section divider */
+    .divider{height:1px;background:var(--border);margin:20px 0}
+    .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:10px}
+
+    /* Metric */
+    .metric{text-align:center;padding:12px 4px}
+    .metric .label{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:4px}
+    .metric .value{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(20px,3vw,28px);font-weight:400;letter-spacing:-0.02em}
+    .metric .sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+    /* Bars */
+    .bar-chart{display:flex;gap:24px;align-items:flex-end;height:140px;padding:16px 0}
+    .bar-col{flex:1;text-align:center}
+    .bar-val{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
+    .bar{border-radius:6px 6px 0 0;transition:height 0.4s ease;min-height:4px}
+    .bar-label{font-size:12px;color:var(--text3);margin-top:8px}
+
+    /* Verdict pill */
+    .verdict{text-align:center;padding:8px 16px;font-size:14px;font-weight:600;border-radius:var(--radius)}
+    .verdict--buy{background:var(--accent2-light);color:var(--accent2)}
+    .verdict--rent{background:var(--accent-light);color:var(--accent)}
+
+    /* Line items */
+    .line-item{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text)}
+    .line-item.total{border-top:2px solid var(--text);padding-top:8px;margin-top:4px;font-weight:700}
+
+    /* Wealth chart */
+    .wealth-chart{display:flex;gap:3px;align-items:flex-end;height:160px;padding:8px 0}
+    .wealth-bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+    .wealth-bars{display:flex;gap:1px;align-items:flex-end;height:130px}
+    .wealth-bars div{border-radius:2px 2px 0 0}
+    .wealth-year{font-size:9px;color:var(--text3)}
+
+    /* Legend */
+    .legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--text2);margin-top:8px}
+    .legend-dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+    /* Badges / pills */
+    .pill{display:inline-block;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:13px;color:var(--text2);text-decoration:none;transition:all 0.15s;cursor:pointer}
+    .pill:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+
+    /* CTA buttons */
+    .btn{display:block;padding:14px 20px;border-radius:var(--radius);text-align:center;text-decoration:none;font-weight:600;font-size:14px;transition:transform 0.15s,box-shadow 0.15s;border:none;cursor:pointer}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.12)}
+    .btn--dark{background:var(--text);color:var(--bg)}
+    .btn--blue{background:#006AFF;color:#fff}
+
+    /* Alert boxes */
+    .alert{border-radius:var(--radius);padding:12px 16px;font-size:13px;line-height:1.6;margin-top:12px}
+    .alert--warn{background:var(--amber-light);border:1px solid var(--amber);color:#7A5A00}
+    .alert--info{background:var(--accent2-light);border:1px solid var(--accent2);color:var(--accent2)}
+
+    /* Footer */
+    .footer{margin-top:48px;padding:20px;text-align:center;font-size:12px;color:var(--text3);line-height:1.7;border-top:1px solid var(--border)}
+
+    /* Wealth Over Time mini bars â scrollable on mobile */
+    @media(max-width:639px){
+      .wealth-chart{overflow-x:auto;-webkit-overflow-scrolling:touch;min-width:0}
+      .wealth-bar-group{min-width:18px}
+      .grid-3{grid-template-columns:1fr}
+      .sidebar-layout{grid-template-columns:1fr}
     }
+
+    /* Breakeven callout */
+    .breakeven{text-align:center;font-size:13px;color:var(--text2);padding:4px 0}
+
+    /* Smooth transitions for tab content */
+    .tab-content{animation:fadeIn 0.3s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    /* NYC-specific: subtle texture */
+    body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.65' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+      z-index:9999}
   </style>
 </head>
 <body>
@@ -30,7 +155,7 @@
     const MAINTENANCE_PER_SQFT = { Manhattan: { coop: 2.44, condo: 3.20 }, Brooklyn: { coop: 1.80, condo: 2.40 }, Queens: { coop: 1.60, condo: 2.10 }, Bronx: { coop: 1.50, condo: 1.90 }, "Staten Island": { coop: 1.40, condo: 1.80 } };
     const MANSION_TAX_BRACKETS = [ [1e6, 2e6, 0.01], [2e6, 3e6, 0.015], [3e6, 4e6, 0.02], [4e6, 5e6, 0.025], [5e6, 10e6, 0.0325], [10e6, 15e6, 0.035], [15e6, 20e6, 0.0375], [20e6, 25e6, 0.0385], [25e6, Infinity, 0.039] ];
     const NEIGHBORHOODS = {
-      Manhattan: ["Upper West Side", "Upper East Side", "Midtown", "Chelsea", "Greenwich Village", "East Village", "SoHo", "TribeCa", "Financial District", "Harlem", "Washington Heights", "Inwood"],
+      Manhattan: ["Upper West Side", "Upper East Side", "Midtown", "Chelsea", "Greenwich Village", "East Village", "SoHo", "Tribeca", "Financial District", "Harlem", "Washington Heights", "Inwood"],
       Brooklyn: ["Park Slope", "Williamsburg", "DUMBO", "Brooklyn Heights", "Cobble Hill", "Carroll Gardens", "Prospect Heights", "Fort Greene", "Greenpoint", "Bushwick", "Bed-Stuy", "Bay Ridge"],
       Queens: ["Astoria", "Long Island City", "Jackson Heights", "Forest Hills", "Flushing", "Sunnyside", "Woodside", "Bayside", "Rego Park"],
       Bronx: ["Riverdale", "Pelham Bay", "Fordham", "Kingsbridge", "Mott Haven", "Concourse"],
@@ -44,81 +169,40 @@
       }
       return price * 0.039;
     }
-
-    function calcTransferTax(price) {
-      return price <= 500000 ? price * 0.01 : price * 0.01425;
-    }
-
-    function calcMortgageRecordingTax(loanAmt) {
-      return loanAmt < 500000 ? loanAmt * 0.018 : loanAmt * 0.01925;
-    }
-
+    function calcTransferTax(price) { return price <= 500000 ? price * 0.01 : price * 0.01425; }
+    function calcMortgageRecordingTax(loanAmt) { return loanAmt < 500000 ? loanAmt * 0.018 : loanAmt * 0.01925; }
     function calcMonthlyMortgage(principal, annualRate, years) {
-      const r = annualRate / 12;
-      const n = years * 12;
+      const r = annualRate / 12, n = years * 12;
       if (r === 0) return principal / n;
       return (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
     }
-
     function fmt(n) { return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n); }
     function fmtPct(n) { return (n * 100).toFixed(2) + "%"; }
 
-    const Tab = ({ active, label, onClick }) => (
-      <button onClick={onClick} style={{ padding: "10px 20px", border: "none", borderBottom: active ? "3px solid #2563eb" : "3px solid transparent", background: active ? "#eff6ff" : "transparent", color: active ? "#1e40af" : "#64748b", fontWeight: active ? 700 : 500, cursor: "pointer", fontSize: 15, transition: "all 0.2s" }}>{label}</button>
-    );
-
     const Input = ({ label, value, onChange, prefix, suffix, type = "number", step, min, max, help }) => (
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{label}</label>
-        <div style={{ display: "flex", alignItems: "center", border: "1px solid #d1d5db", borderRadius: 8, overflow: "hidden", background: "#fff" }}>
-          {prefix && <span style={{ padding: "8px 10px", background: "#f9fafb", color: "#6b7280", fontSize: 14, borderRight: "1px solid #d1d5db" }}>{prefix}</span>}
-          <input type={type} value={value} onChange={e => onChange(type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)} step={step} min={min} max={max} style={{ flex: 1, padding: "8px 12px", border: "none", outline: "none", fontSize: 15, width: "100%" }} />
-          {suffix && <span style={{ padding: "8px 10px", background: "#f9fafb", color: "#6b7280", fontSize: 14, borderLeft: "1px solid #d1d5db" }}>{suffix}</span>}
+      <div className="field">
+        <label>{label}</label>
+        <div className="field-row">
+          {prefix && <span className="pre">{prefix}</span>}
+          <input type={type} value={value} onChange={e => onChange(type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)} step={step} min={min} max={max} />
+          {suffix && <span className="suf">{suffix}</span>}
         </div>
-        {help && <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>{help}</p>}
+        {help && <div className="help">{help}</div>}
       </div>
     );
 
     const Select = ({ label, value, onChange, options }) => (
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{label}</label>
-        <select value={value} onChange={e => onChange(e.target.value)} style={{ width: "100%", padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 15, background: "#fff" }}>
-          {options.map(o => <option key={typeof o === "string" ? o : o.value} value={typeof o === "string" ? o : o.value}>{typeof o === "string" ? o : o.label}</option>)}
-        </select>
-      </div>
-    );
-
-    const Card = ({ title, children, accent }) => (
-      <div style={{ background: "#fff", borderRadius: 12, padding: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: accent ? `2px solid ${accent}` : "1px solid #e5e7eb" }}>
-        {title && <h3 style={{ margin: "0 0 16px", fontSize: 17, color: "#1e293b" }}>{title}</h3>}
-        {children}
-      </div>
-    );
-
-    const Metric = ({ label, value, color, sub }) => (
-      <div style={{ textAlign: "center", padding: "12px 8px" }}>
-        <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 4 }}>{label}</div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: color || "#1e293b" }}>{value}</div>
-        {sub && <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>{sub}</div>}
-      </div>
-    );
-
-    const BarChart = ({ buyTotal, rentTotal }) => {
-      const max = Math.max(buyTotal, rentTotal);
-      return (
-        <div style={{ display: "flex", gap: 24, alignItems: "flex-end", height: 160, padding: "16px 0" }}>
-          {[{ label: "Buy", val: buyTotal, color: "#2563eb" }, { label: "Rent", val: rentTotal, color: "#f59e0b" }].map(b => (
-            <div key={b.label} style={{ flex: 1, textAlign: "center" }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{fmt(b.val)}/mo</div>
-              <div style={{ height: max > 0 ? (b.val / max) * 120 : 0, background: b.color, borderRadius: "6px 6px 0 0", transition: "height 0.3s", minHeight: 4 }} />
-              <div style={{ fontSize: 13, color: "#6b7280", marginTop: 6 }}>{b.label}</div>
-            </div>
-          ))}
+      <div className="field">
+        <label>{label}</label>
+        <div className="field-row">
+          <select value={value} onChange={e => onChange(e.target.value)}>
+            {options.map(o => <option key={typeof o === "string" ? o : o.value} value={typeof o === "string" ? o : o.value}>{typeof o === "string" ? o : o.label}</option>)}
+          </select>
         </div>
-      );
-    };
+      </div>
+    );
 
-    // Budget Calculator Tab
+    // âââ Budget Tab ââââââââââââââââââââââââââââââââââââââââââââ
     function BudgetTab() {
       const [income, setIncome] = useState(200000);
       const [monthlyDebt, setMonthlyDebt] = useState(500);
@@ -128,17 +212,13 @@
       const [term, setTerm] = useState(30);
 
       const maxMonthly = useMemo(() => {
-        const grossMonthly = income / 12;
-        const dtiLimit = grossMonthly * 0.36 - monthlyDebt;
-        const frontEnd = grossMonthly * 0.28;
-        return Math.max(0, Math.min(dtiLimit, frontEnd));
+        const g = income / 12;
+        return Math.max(0, Math.min(g * 0.36 - monthlyDebt, g * 0.28));
       }, [income, monthlyDebt]);
 
       const maxLoan = useMemo(() => {
-        const r = rate / 100 / 12;
-        const n = term * 12;
-        if (r === 0) return maxMonthly * n;
-        return maxMonthly * (Math.pow(1 + r, n) - 1) / (r * Math.pow(1 + r, n));
+        const r = rate / 100 / 12, n = term * 12;
+        return r === 0 ? maxMonthly * n : maxMonthly * (Math.pow(1 + r, n) - 1) / (r * Math.pow(1 + r, n));
       }, [maxMonthly, rate, term]);
 
       const maxPrice = useMemo(() => {
@@ -147,46 +227,48 @@
       }, [maxLoan, downPct, savings]);
 
       const downPayment = maxPrice * (downPct / 100);
-      const cashNeeded = downPayment + maxPrice * 0.03; // ~3% closing
+      const cashNeeded = downPayment + maxPrice * 0.03;
 
       return (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-          <Card title="Your Finances">
+        <div className="tab-content grid-2" style={{ gap: 24 }}>
+          <div className="card">
+            <h3>Your Finances</h3>
             <Input label="Annual Household Income" value={income} onChange={setIncome} prefix="$" step={10000} />
-            <Input label="Monthly Debt Payments" value={monthlyDebt} onChange={setMonthlyDebt} prefix="$" help="Car loans, student loans, credit cards, etc." />
-            <Input label="Total Savings for Purchase" value={savings} onChange={setSavings} prefix="$" />
-            <Input label="Down Payment" value={downPct} onChange={setDownPct} suffix="%" min={3} max={100} help="Minimum 20% to avoid PMI" />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <Input label="Monthly Debt Payments" value={monthlyDebt} onChange={setMonthlyDebt} prefix="$" help="Car loans, student loans, credit cards" />
+            <Input label="Total Savings" value={savings} onChange={setSavings} prefix="$" />
+            <Input label="Down Payment" value={downPct} onChange={setDownPct} suffix="%" min={3} max={100} help="20% or more to avoid PMI" />
+            <div className="grid-2">
               <Input label="Interest Rate" value={rate} onChange={setRate} suffix="%" step={0.05} />
-              <Select label="Loan Term" value={term} onChange={v => setTerm(parseInt(v))} options={[{ value: 30, label: "30 years (6.30%)" }, { value: 15, label: "15 years (5.70%)" }]} />
+              <Select label="Loan Term" value={term} onChange={v => setTerm(parseInt(v))} options={[{ value: 30, label: "30 yr" }, { value: 15, label: "15 yr" }]} />
             </div>
-          </Card>
+          </div>
           <div>
-            <Card title="Your Estimated Budget" accent="#2563eb">
-              <Metric label="Maximum Purchase Price" value={fmt(maxPrice)} color="#2563eb" />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, borderTop: "1px solid #e5e7eb", paddingTop: 16 }}>
-                <Metric label="Max Monthly" value={fmt(maxMonthly)} sub="housing payment" />
-                <Metric label="Down Payment" value={fmt(downPayment)} sub={`${downPct}%`} />
-                <Metric label="Cash Needed" value={fmt(cashNeeded)} sub="incl. ~3% closing" />
+            <div className="card card--accent" style={{ textAlign: "center", paddingTop: 32, paddingBottom: 32 }}>
+              <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text3)", marginBottom: 8 }}>Maximum Purchase Price</div>
+              <div className="serif" style={{ fontSize: "clamp(32px,5vw,48px)", color: "var(--accent)", letterSpacing: "-0.02em" }}>{fmt(maxPrice)}</div>
+              <div className="divider" style={{ margin: "24px 0 16px" }} />
+              <div className="grid-3">
+                <div className="metric"><div className="label">Max Monthly</div><div className="value">{fmt(maxMonthly)}</div><div className="sub">housing payment</div></div>
+                <div className="metric"><div className="label">Down Payment</div><div className="value">{fmt(downPayment)}</div><div className="sub">{downPct}%</div></div>
+                <div className="metric"><div className="label">Cash Needed</div><div className="value">{fmt(cashNeeded)}</div><div className="sub">incl. ~3% closing</div></div>
               </div>
-              {savings < cashNeeded && <div style={{ background: "#fef3c7", border: "1px solid #f59e0b", borderRadius: 8, padding: 12, marginTop: 12, fontSize: 13 }}>Your savings ({fmt(savings)}) may not cover the down payment + closing costs ({fmt(cashNeeded)}). Consider a lower purchase price or saving more.</div>}
-              {downPct < 20 && <div style={{ background: "#dbeafe", border: "1px solid #60a5fa", borderRadius: 8, padding: 12, marginTop: 12, fontSize: 13 }}>With less than 20% down, you'll need PMI (~0.5-1% of loan/year), which adds {fmt(maxLoan * 0.0075 / 12)}/mo to your costs.</div>}
-            </Card>
-            <div style={{ marginTop: 16 }}>
-              <Card title="How This Is Calculated">
-                <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.7 }}>
-                  <p style={{ margin: "0 0 8px" }}><strong>Front-end ratio:</strong> Housing â¤ 28% of gross income = {fmt(income / 12 * 0.28)}/mo</p>
-                  <p style={{ margin: "0 0 8px" }}><strong>Back-end ratio:</strong> Total debt â¤ 36% of gross income = {fmt(income / 12 * 0.36)}/mo (minus {fmt(monthlyDebt)} existing debt)</p>
-                  <p style={{ margin: 0 }}><strong>Your limit:</strong> {fmt(maxMonthly)}/mo â {fmt(maxLoan)} loan â {fmt(maxPrice)} purchase price at {downPct}% down</p>
-                </div>
-              </Card>
+              {savings < cashNeeded && <div className="alert alert--warn">Your savings ({fmt(savings)}) may not cover the down payment + closing costs ({fmt(cashNeeded)}). Consider a lower price or saving more.</div>}
+              {downPct < 20 && <div className="alert alert--info">With less than 20% down, PMI adds ~{fmt(maxLoan * 0.0075 / 12)}/mo to your costs.</div>}
+            </div>
+            <div className="card">
+              <h3>How It Works</h3>
+              <div style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.8 }}>
+                <p style={{ marginBottom: 6 }}>Housing payment capped at 28% of gross income ({fmt(income / 12 * 0.28)}/mo).</p>
+                <p style={{ marginBottom: 6 }}>Total debt capped at 36% of gross income ({fmt(income / 12 * 0.36)}/mo), minus {fmt(monthlyDebt)} existing debt.</p>
+                <p>Limit: {fmt(maxMonthly)}/mo &#8594; {fmt(maxLoan)} loan &#8594; {fmt(maxPrice)} at {downPct}% down.</p>
+              </div>
             </div>
           </div>
         </div>
       );
     }
 
-    // Rent vs Buy Tab
+    // âââ Rent vs Buy Tab âââââââââââââââââââââââââââââââââââââââ
     function RentVsBuyTab() {
       const [rent, setRent] = useState(3500);
       const [rentIncrease, setRentIncrease] = useState(3.0);
@@ -210,8 +292,6 @@
         const insurance = price * 0.003 / 12;
         const pmi = downPct < 20 ? loan * 0.0075 / 12 : 0;
         const totalMonthlyBuy = monthlyMtg + propTax + maintenance + insurance + pmi;
-
-        // Closing costs
         const mansionTax = calcMansionTax(price);
         const transferTax = calcTransferTax(price);
         const mortgageRecTax = calcMortgageRecordingTax(loan);
@@ -220,175 +300,153 @@
         const totalClosing = mansionTax + transferTax + mortgageRecTax + titleIns + attorney;
         const totalUpfront = dp + totalClosing;
 
-        // Break-even analysis â month-by-month simulation
-        let buyWealth = 0, rentWealth = 0;
-        let breakEvenYear = null;
+        let buyWealth = 0, rentWealth = 0, breakEvenYear = null;
         const yearlyData = [];
-        const monthlyInvestRate = investReturn / 100 / 12;
-        const monthlyAppreciation = appreciation / 100 / 12;
-        const r = rate / 100 / 12;
-        const nPayments = term * 12;
-
-        // Renter starts with the upfront capital invested
-        let rentPortfolio = totalUpfront;
-        let currentHomeVal = price;
-        const maxYears = Math.max(years, 30);
-
-        for (let y = 1; y <= maxYears; y++) {
-          // Simulate 12 months for this year
+        const mi = investReturn / 100 / 12, ma = appreciation / 100 / 12, r = rate / 100 / 12, nP = term * 12;
+        let rp = totalUpfront, hv = price;
+        const MY = Math.max(years, 30);
+        for (let y = 1; y <= MY; y++) {
           for (let m = 0; m < 12; m++) {
-            // Home appreciates monthly
-            currentHomeVal *= (1 + monthlyAppreciation);
-
-            // Renter's current rent (increases annually)
-            const currentRent = rent * Math.pow(1 + rentIncrease / 100, y - 1);
-
-            // Monthly difference: positive = renter saves, negative = renter pays more
-            const monthlyDiff = totalMonthlyBuy - currentRent;
-
-            // Renter's portfolio grows with investment returns
-            rentPortfolio *= (1 + monthlyInvestRate);
-
-            // Add or subtract the monthly difference
-            rentPortfolio += monthlyDiff;
+            hv *= (1 + ma);
+            const cr = rent * Math.pow(1 + rentIncrease / 100, y - 1);
+            rp = rp * (1 + mi) + (totalMonthlyBuy - cr);
           }
-
-          // Buy wealth: home equity minus 3% selling costs
-          const monthsPaid = y * 12;
-          const remainingLoan = monthsPaid >= nPayments ? 0 :
-            loan * (Math.pow(1 + r, nPayments) - Math.pow(1 + r, monthsPaid)) / (Math.pow(1 + r, nPayments) - 1);
-          buyWealth = currentHomeVal * 0.97 - remainingLoan; // 3% selling costs
-          rentWealth = rentPortfolio;
-
+          const mp = y * 12;
+          const rl = mp >= nP ? 0 : loan * (Math.pow(1 + r, nP) - Math.pow(1 + r, mp)) / (Math.pow(1 + r, nP) - 1);
+          buyWealth = hv * 0.97 - rl;
+          rentWealth = rp;
           if (!breakEvenYear && buyWealth > rentWealth) breakEvenYear = y;
           yearlyData.push({ year: y, buyWealth: Math.round(buyWealth), rentWealth: Math.round(rentWealth) });
         }
-
-        // Reset home value for final output (we mutated it in the loop)
-        // buyWealth and rentWealth are already set from the last iteration up to maxYears
-        // But we want the values at the user's chosen time horizon
-        const atHorizon = yearlyData[years - 1] || yearlyData[yearlyData.length - 1];
-        buyWealth = atHorizon.buyWealth;
-        rentWealth = atHorizon.rentWealth;
-
-        return { monthlyMtg, propTax, maintenance, insurance, pmi, totalMonthlyBuy, mansionTax, transferTax, mortgageRecTax, titleIns, attorney, totalClosing, totalUpfront, dp, loan, breakEvenYear, yearlyData, buyWealth, rentWealth };
+        const ah = yearlyData[years - 1] || yearlyData[yearlyData.length - 1];
+        return { monthlyMtg, propTax, maintenance, insurance, pmi, totalMonthlyBuy, mansionTax, transferTax, mortgageRecTax, titleIns, attorney, totalClosing, totalUpfront, dp, loan, breakEvenYear, yearlyData, buyWealth: ah.buyWealth, rentWealth: ah.rentWealth };
       }, [rent, rentIncrease, price, downPct, rate, term, borough, propType, sqft, appreciation, investReturn, years]);
 
+      const buyWins = calc.buyWealth > calc.rentWealth;
+      const maxBar = Math.max(calc.totalMonthlyBuy, rent);
+
       return (
-        <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 24 }}>
-          <div style={{ maxHeight: "80vh", overflowY: "auto" }}>
-            <Card title="Inputs">
-              <h4 style={{ margin: "0 0 8px", fontSize: 14, color: "#6b7280", textTransform: "uppercase", letterSpacing: 1 }}>Current Rent</h4>
+        <div className="tab-content sidebar-layout">
+          <div className="sidebar">
+            <div className="card">
+              <h3>Inputs</h3>
+              <div className="section-label">Current Rent</div>
               <Input label="Monthly Rent" value={rent} onChange={setRent} prefix="$" />
-              <Input label="Annual Rent Increase" value={rentIncrease} onChange={setRentIncrease} suffix="%" step={0.5} help="NYC stabilized: 3% (1yr), 4.5% (2yr)" />
-              <hr style={{ border: "none", borderTop: "1px solid #e5e7eb", margin: "16px 0" }} />
-              <h4 style={{ margin: "0 0 8px", fontSize: 14, color: "#6b7280", textTransform: "uppercase", letterSpacing: 1 }}>Purchase</h4>
+              <Input label="Annual Increase" value={rentIncrease} onChange={setRentIncrease} suffix="%" step={0.5} help="NYC stabilized: 3% (1yr), 4.5% (2yr)" />
+              <div className="divider" />
+              <div className="section-label">Purchase</div>
               <Input label="Purchase Price" value={price} onChange={setPrice} prefix="$" step={25000} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="grid-2">
                 <Select label="Borough" value={borough} onChange={setBorough} options={BOROUGHS} />
                 <Select label="Type" value={propType} onChange={setPropType} options={[{ value: "condo", label: "Condo" }, { value: "coop", label: "Co-op" }]} />
               </div>
-              <Input label="Apartment Size" value={sqft} onChange={setSqft} suffix="sq ft" step={50} />
+              <Input label="Size" value={sqft} onChange={setSqft} suffix="sq ft" step={50} />
               <Input label="Down Payment" value={downPct} onChange={setDownPct} suffix="%" min={3} max={100} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="grid-2">
                 <Input label="Rate" value={rate} onChange={setRate} suffix="%" step={0.05} />
                 <Select label="Term" value={term} onChange={v => setTerm(parseInt(v))} options={[{ value: 30, label: "30yr" }, { value: 15, label: "15yr" }]} />
               </div>
-              <hr style={{ border: "none", borderTop: "1px solid #e5e7eb", margin: "16px 0" }} />
-              <h4 style={{ margin: "0 0 8px", fontSize: 14, color: "#6b7280", textTransform: "uppercase", letterSpacing: 1 }}>Assumptions</h4>
+              <div className="divider" />
+              <div className="section-label">Assumptions</div>
               <Input label="Home Appreciation" value={appreciation} onChange={setAppreciation} suffix="%/yr" step={0.5} />
               <Input label="Investment Return" value={investReturn} onChange={setInvestReturn} suffix="%/yr" step={0.5} help="If you rented and invested the difference" />
               <Input label="Time Horizon" value={years} onChange={setYears} suffix="years" min={1} max={30} />
-            </Card>
+            </div>
           </div>
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-              <Card accent="#2563eb">
-                <h4 style={{ margin: "0 0 12px", color: "#2563eb", fontSize: 14 }}>Monthly Cost of Buying</h4>
-                <div style={{ fontSize: 28, fontWeight: 700, color: "#1e293b" }}>{fmt(calc.totalMonthlyBuy)}</div>
-                <div style={{ marginTop: 12, fontSize: 13, color: "#6b7280", lineHeight: 1.8 }}>
+            <div className="grid-2" style={{ marginBottom: 16 }}>
+              <div className="card card--accent">
+                <div className="section-label" style={{ color: "var(--accent)" }}>Monthly Cost of Buying</div>
+                <div className="serif" style={{ fontSize: 28, marginBottom: 12 }}>{fmt(calc.totalMonthlyBuy)}</div>
+                <div style={{ fontSize: 13, color: "var(--text2)", lineHeight: 2 }}>
                   Mortgage: {fmt(calc.monthlyMtg)}<br />
                   Property Tax: {fmt(calc.propTax)}<br />
                   {propType === "condo" ? "HOA" : "Maintenance"}: {fmt(calc.maintenance)}<br />
-                  Insurance: {fmt(calc.insurance)}<br />
-                  {calc.pmi > 0 && <>PMI: {fmt(calc.pmi)}<br /></>}
+                  Insurance: {fmt(calc.insurance)}
+                  {calc.pmi > 0 && <><br />PMI: {fmt(calc.pmi)}</>}
                 </div>
-              </Card>
-              <Card accent="#f59e0b">
-                <h4 style={{ margin: "0 0 12px", color: "#f59e0b", fontSize: 14 }}>Monthly Cost of Renting</h4>
-                <div style={{ fontSize: 28, fontWeight: 700, color: "#1e293b" }}>{fmt(rent)}</div>
-                <div style={{ marginTop: 12, fontSize: 13, color: "#6b7280", lineHeight: 1.8 }}>
+              </div>
+              <div className="card card--accent2">
+                <div className="section-label" style={{ color: "var(--accent2)" }}>Monthly Cost of Renting</div>
+                <div className="serif" style={{ fontSize: 28, marginBottom: 12 }}>{fmt(rent)}</div>
+                <div style={{ fontSize: 13, color: "var(--text2)", lineHeight: 2 }}>
                   Current rent: {fmt(rent)}<br />
                   In {years} years: {fmt(rent * Math.pow(1 + rentIncrease / 100, years))}<br />
                   No equity built<br />
                   Invest savings at {investReturn}%/yr
                 </div>
-              </Card>
+              </div>
             </div>
 
-            <Card title="Monthly Cost Comparison">
-              <BarChart buyTotal={calc.totalMonthlyBuy} rentTotal={rent} />
-              <div style={{ textAlign: "center", fontSize: 14, color: calc.totalMonthlyBuy > rent ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
+            <div className="card">
+              <h3>Monthly Cost Comparison</h3>
+              <div className="bar-chart">
+                {[{ label: "Buy", val: calc.totalMonthlyBuy, color: "var(--accent)" }, { label: "Rent", val: rent, color: "var(--accent2)" }].map(b => (
+                  <div key={b.label} className="bar-col">
+                    <div className="bar-val">{fmt(b.val)}/mo</div>
+                    <div className="bar" style={{ height: maxBar > 0 ? (b.val / maxBar) * 100 : 0, background: b.color }} />
+                    <div className="bar-label">{b.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div className={`verdict ${buyWins ? "verdict--buy" : "verdict--rent"}`} style={{ marginTop: 8 }}>
                 Buying costs {fmt(Math.abs(calc.totalMonthlyBuy - rent))}/mo {calc.totalMonthlyBuy > rent ? "more" : "less"} than renting
               </div>
-            </Card>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
-              <Card title="Upfront Costs to Buy">
-                <div style={{ fontSize: 13, lineHeight: 2, color: "#374151" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Down Payment ({downPct}%)<strong>{fmt(calc.dp)}</strong></div>
-                  {calc.mansionTax > 0 && <div style={{ display: "flex", justifyContent: "space-between" }}>Mansion Tax<strong>{fmt(calc.mansionTax)}</strong></div>}
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Transfer Tax<strong>{fmt(calc.transferTax)}</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Mortgage Recording Tax<strong>{fmt(calc.mortgageRecTax)}</strong></div>
-                  {calc.titleIns > 0 && <div style={{ display: "flex", justifyContent: "space-between" }}>Title Insurance<strong>{fmt(calc.titleIns)}</strong></div>}
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Attorney<strong>{fmt(calc.attorney)}</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid #1e293b", paddingTop: 4, marginTop: 4, fontWeight: 700 }}>Total Upfront<strong>{fmt(calc.totalUpfront)}</strong></div>
-                </div>
-              </Card>
-              <Card title={`Wealth After ${years} Years`} accent={calc.buyWealth > calc.rentWealth ? "#16a34a" : "#f59e0b"}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <Metric label="Buy (equity)" value={fmt(calc.buyWealth)} color="#2563eb" />
-                  <Metric label="Rent (invested)" value={fmt(calc.rentWealth)} color="#f59e0b" />
-                </div>
-                <div style={{ textAlign: "center", padding: "12px 0", fontSize: 15, fontWeight: 700, color: calc.buyWealth > calc.rentWealth ? "#16a34a" : "#dc2626" }}>
-                  {calc.buyWealth > calc.rentWealth
-                    ? `Buying wins by ${fmt(calc.buyWealth - calc.rentWealth)}`
-                    : `Renting wins by ${fmt(calc.rentWealth - calc.buyWealth)}`}
-                </div>
-                {calc.breakEvenYear && <div style={{ textAlign: "center", fontSize: 13, color: "#6b7280" }}>Break-even point: ~{calc.breakEvenYear} year{calc.breakEvenYear > 1 ? "s" : ""}</div>}
-              </Card>
             </div>
 
-            <div style={{ marginTop: 16 }}>
-              <Card title="Wealth Over Time">
-                <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 180, padding: "8px 0" }}>
-                  {calc.yearlyData.slice(0, years).map((d, i) => {
-                    const maxVal = Math.max(...calc.yearlyData.slice(0, years).flatMap(d => [Math.abs(d.buyWealth), Math.abs(d.rentWealth)]));
-                    const buyH = maxVal > 0 ? Math.max(2, Math.abs(d.buyWealth) / maxVal * 150) : 2;
-                    const rentH = maxVal > 0 ? Math.max(2, Math.abs(d.rentWealth) / maxVal * 150) : 2;
-                    return (
-                      <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                        <div style={{ display: "flex", gap: 1, alignItems: "flex-end", height: 150 }}>
-                          <div style={{ width: "45%", height: buyH, background: d.buyWealth >= 0 ? "#2563eb" : "#ef4444", borderRadius: "2px 2px 0 0", opacity: 0.8 }} />
-                          <div style={{ width: "45%", height: rentH, background: "#f59e0b", borderRadius: "2px 2px 0 0", opacity: 0.8 }} />
-                        </div>
-                        {(i === 0 || (i + 1) % 5 === 0 || i === years - 1) && <div style={{ fontSize: 10, color: "#9ca3af" }}>{d.year}</div>}
+            <div className="grid-2" style={{ marginTop: 16 }}>
+              <div className="card">
+                <h3>Upfront Costs</h3>
+                <div className="line-item">Down Payment ({downPct}%)<strong>{fmt(calc.dp)}</strong></div>
+                {calc.mansionTax > 0 && <div className="line-item">Mansion Tax<strong>{fmt(calc.mansionTax)}</strong></div>}
+                <div className="line-item">Transfer Tax<strong>{fmt(calc.transferTax)}</strong></div>
+                <div className="line-item">Mortgage Recording Tax<strong>{fmt(calc.mortgageRecTax)}</strong></div>
+                {calc.titleIns > 0 && <div className="line-item">Title Insurance<strong>{fmt(calc.titleIns)}</strong></div>}
+                <div className="line-item">Attorney<strong>{fmt(calc.attorney)}</strong></div>
+                <div className="line-item total">Total Upfront<strong>{fmt(calc.totalUpfront)}</strong></div>
+              </div>
+              <div className={`card ${buyWins ? "card--accent2" : "card--accent"}`}>
+                <h3>Wealth After {years} Years</h3>
+                <div className="grid-2" style={{ marginBottom: 12 }}>
+                  <div className="metric"><div className="label">Buy (equity)</div><div className="value" style={{ color: "var(--accent)" }}>{fmt(calc.buyWealth)}</div></div>
+                  <div className="metric"><div className="label">Rent (invested)</div><div className="value" style={{ color: "var(--accent2)" }}>{fmt(calc.rentWealth)}</div></div>
+                </div>
+                <div className={`verdict ${buyWins ? "verdict--buy" : "verdict--rent"}`}>
+                  {buyWins ? `Buying wins by ${fmt(calc.buyWealth - calc.rentWealth)}` : `Renting wins by ${fmt(calc.rentWealth - calc.buyWealth)}`}
+                </div>
+                {calc.breakEvenYear && <div className="breakeven" style={{ marginTop: 8 }}>Break-even: ~{calc.breakEvenYear} year{calc.breakEvenYear > 1 ? "s" : ""}</div>}
+              </div>
+            </div>
+
+            <div className="card" style={{ marginTop: 16 }}>
+              <h3>Wealth Over Time</h3>
+              <div className="wealth-chart">
+                {calc.yearlyData.slice(0, years).map((d, i) => {
+                  const mv = Math.max(...calc.yearlyData.slice(0, years).flatMap(d => [Math.abs(d.buyWealth), Math.abs(d.rentWealth)]));
+                  const bH = mv > 0 ? Math.max(2, Math.abs(d.buyWealth) / mv * 120) : 2;
+                  const rH = mv > 0 ? Math.max(2, Math.abs(d.rentWealth) / mv * 120) : 2;
+                  return (
+                    <div key={i} className="wealth-bar-group">
+                      <div className="wealth-bars">
+                        <div style={{ width: "45%", height: bH, background: d.buyWealth >= 0 ? "var(--accent)" : "#dc2626", opacity: 0.75 }} />
+                        <div style={{ width: "45%", height: rH, background: "var(--accent2)", opacity: 0.75 }} />
                       </div>
-                    );
-                  })}
-                </div>
-                <div style={{ display: "flex", gap: 16, justifyContent: "center", fontSize: 12, color: "#6b7280" }}>
-                  <span><span style={{ display: "inline-block", width: 12, height: 12, background: "#2563eb", borderRadius: 2, marginRight: 4, verticalAlign: "middle" }}></span>Buy (equity)</span>
-                  <span><span style={{ display: "inline-block", width: 12, height: 12, background: "#f59e0b", borderRadius: 2, marginRight: 4, verticalAlign: "middle" }}></span>Rent (invested)</span>
-                </div>
-              </Card>
+                      {(i === 0 || (i + 1) % 5 === 0 || i === years - 1) && <div className="wealth-year">{d.year}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="legend">
+                <span><span className="legend-dot" style={{ background: "var(--accent)" }}></span>Buy (equity)</span>
+                <span><span className="legend-dot" style={{ background: "var(--accent2)" }}></span>Rent (invested)</span>
+              </div>
             </div>
           </div>
         </div>
       );
     }
 
-    // Neighborhood Explorer Tab
+    // âââ Explorer Tab ââââââââââââââââââââââââââââââââââââââââââ
     function ExplorerTab() {
       const [borough, setBorough] = useState("Manhattan");
       const [maxPrice, setMaxPrice] = useState(1500000);
@@ -398,11 +456,11 @@
       const streeteasyUrl = useMemo(() => {
         const area = borough.toLowerCase().replace(" ", "-");
         let url = `https://streeteasy.com/for-sale/${area}`;
-        const params = [];
-        if (maxPrice) params.push(`price:-${maxPrice}`);
-        if (minBeds > 0) params.push(`beds>=${minBeds}`);
-        if (propType !== "any") params.push(`type:${propType}`);
-        return params.length ? `${url}?${params.join("&")}` : url;
+        const p = [];
+        if (maxPrice) p.push(`price:-${maxPrice}`);
+        if (minBeds > 0) p.push(`beds>=${minBeds}`);
+        if (propType !== "any") p.push(`type:${propType}`);
+        return p.length ? `${url}?${p.join("&")}` : url;
       }, [borough, maxPrice, minBeds, propType]);
 
       const zillowUrl = useMemo(() => {
@@ -411,81 +469,72 @@
       }, [borough, maxPrice, minBeds]);
 
       return (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-          <Card title="Search Filters">
+        <div className="tab-content grid-2" style={{ gap: 24 }}>
+          <div className="card">
+            <h3>Search Filters</h3>
             <Select label="Borough" value={borough} onChange={setBorough} options={BOROUGHS} />
             <Input label="Max Price" value={maxPrice} onChange={setMaxPrice} prefix="$" step={50000} />
             <Select label="Min Bedrooms" value={minBeds} onChange={v => setMinBeds(parseInt(v))} options={[{ value: 0, label: "Studio+" }, { value: 1, label: "1+" }, { value: 2, label: "2+" }, { value: 3, label: "3+" }, { value: 4, label: "4+" }]} />
             <Select label="Property Type" value={propType} onChange={setPropType} options={[{ value: "any", label: "Any" }, { value: "condo", label: "Condo" }, { value: "coop", label: "Co-op" }]} />
-
-            <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
-              <a href={streeteasyUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "14px 20px", background: "#1e293b", color: "#fff", borderRadius: 8, textAlign: "center", textDecoration: "none", fontWeight: 600, fontSize: 15 }}>Search StreetEasy â</a>
-              <a href={zillowUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "14px 20px", background: "#006AFF", color: "#fff", borderRadius: 8, textAlign: "center", textDecoration: "none", fontWeight: 600, fontSize: 15 }}>Search Zillow â</a>
+            <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
+              <a href={streeteasyUrl} target="_blank" rel="noopener noreferrer" className="btn btn--dark">Search StreetEasy &#8594;</a>
+              <a href={zillowUrl} target="_blank" rel="noopener noreferrer" className="btn btn--blue">Search Zillow &#8594;</a>
             </div>
-          </Card>
-
+          </div>
           <div>
-            <Card title={`${borough} Neighborhoods`}>
+            <div className="card">
+              <h3>{borough} Neighborhoods</h3>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {NEIGHBORHOODS[borough].map(n => (
-                  <a key={n} href={`https://streeteasy.com/for-sale/${n.toLowerCase().replace(/\s+/g, "-")}`} target="_blank" rel="noopener noreferrer"
-                    style={{ padding: "6px 14px", background: "#f1f5f9", borderRadius: 20, fontSize: 13, color: "#334155", textDecoration: "none", border: "1px solid #e2e8f0", cursor: "pointer" }}>
-                    {n}
-                  </a>
+                  <a key={n} href={`https://streeteasy.com/for-sale/${n.toLowerCase().replace(/\s+/g, "-")}`} target="_blank" rel="noopener noreferrer" className="pill">{n}</a>
                 ))}
               </div>
-            </Card>
-
-            <div style={{ marginTop: 16 }}>
-              <Card title={`${borough} Tax & Fee Snapshot`}>
-                <div style={{ fontSize: 14, lineHeight: 2, color: "#374151" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Effective Property Tax Rate<strong>{fmtPct(PROPERTY_TAX_RATES[borough])}</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Annual Tax on {fmt(maxPrice)}<strong>{fmt(maxPrice * PROPERTY_TAX_RATES[borough])}</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Co-op Maintenance<strong>${MAINTENANCE_PER_SQFT[borough].coop}/sq ft</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Condo HOA<strong>${MAINTENANCE_PER_SQFT[borough].condo}/sq ft</strong></div>
-                  {maxPrice >= 1e6 && <div style={{ display: "flex", justifyContent: "space-between", color: "#dc2626" }}>Mansion Tax<strong>{fmt(calcMansionTax(maxPrice))}</strong></div>}
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>Transfer Tax<strong>{fmt(calcTransferTax(maxPrice))}</strong></div>
-                </div>
-              </Card>
             </div>
-
-            <div style={{ marginTop: 16 }}>
-              <Card title="NYC Buying Tips">
-                <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.8 }}>
-                  <p style={{ margin: "0 0 8px" }}><strong>Co-op vs Condo:</strong> Co-ops are ~20-30% cheaper but have strict board approval, subletting restrictions, and higher maintenance. Condos offer more freedom but cost more.</p>
-                  <p style={{ margin: "0 0 8px" }}><strong>Mansion Tax:</strong> Applies to all purchases over $1M â that's most of Manhattan. Budget 1-2.5% for typical purchases.</p>
-                  <p style={{ margin: "0 0 8px" }}><strong>Mortgage Recording Tax:</strong> NYC-specific tax of ~1.9% on your loan amount. This is one of the biggest hidden costs.</p>
-                  <p style={{ margin: 0 }}><strong>Flip Tax:</strong> Some co-ops charge ~2% when you sell (usually seller pays). Check building bylaws.</p>
-                </div>
-              </Card>
+            <div className="card">
+              <h3>{borough} Tax &amp; Fee Snapshot</h3>
+              <div style={{ fontSize: 14, lineHeight: 2, color: "var(--text)" }}>
+                <div className="line-item">Effective Property Tax Rate<strong>{fmtPct(PROPERTY_TAX_RATES[borough])}</strong></div>
+                <div className="line-item">Annual Tax on {fmt(maxPrice)}<strong>{fmt(maxPrice * PROPERTY_TAX_RATES[borough])}</strong></div>
+                <div className="line-item">Co-op Maintenance<strong>${MAINTENANCE_PER_SQFT[borough].coop}/sq ft</strong></div>
+                <div className="line-item">Condo HOA<strong>${MAINTENANCE_PER_SQFT[borough].condo}/sq ft</strong></div>
+                {maxPrice >= 1e6 && <div className="line-item" style={{ color: "var(--accent)" }}>Mansion Tax<strong>{fmt(calcMansionTax(maxPrice))}</strong></div>}
+                <div className="line-item">Transfer Tax<strong>{fmt(calcTransferTax(maxPrice))}</strong></div>
+              </div>
+            </div>
+            <div className="card">
+              <h3>NYC Buying Tips</h3>
+              <div style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.9 }}>
+                <p style={{ marginBottom: 8 }}><strong style={{ color: "var(--text)" }}>Co-op vs Condo:</strong> Co-ops are ~20-30% cheaper but have strict board approval, subletting restrictions, and higher maintenance. Condos offer more freedom but cost more.</p>
+                <p style={{ marginBottom: 8 }}><strong style={{ color: "var(--text)" }}>Mansion Tax:</strong> Applies to all purchases over $1M. Budget 1-2.5% for typical purchases.</p>
+                <p style={{ marginBottom: 8 }}><strong style={{ color: "var(--text)" }}>Mortgage Recording Tax:</strong> NYC-specific tax of ~1.9% on your loan amount. One of the biggest hidden costs.</p>
+                <p><strong style={{ color: "var(--text)" }}>Flip Tax:</strong> Some co-ops charge ~2% when you sell. Check building bylaws.</p>
+              </div>
             </div>
           </div>
         </div>
       );
     }
 
+    // âââ App Shell âââââââââââââââââââââââââââââââââââââââââââââ
     function NYCRentVsBuy() {
       const [tab, setTab] = useState("budget");
 
       return (
-        <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", maxWidth: 1100, margin: "0 auto", padding: 24, background: "#f8fafc", minHeight: "100vh" }}>
-          <div style={{ marginBottom: 24 }}>
-            <h1 style={{ margin: 0, fontSize: 28, color: "#0f172a" }}>NYC Rent vs. Buy Calculator</h1>
-            <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 15 }}>Andrew & partner â explore your options with real NYC data (March 2026)</p>
+        <div className="wrap">
+          <div className="header">
+            <h1>NYC Rent vs. Buy</h1>
+            <p>Explore your options with real New York City data<span className="dot"></span>March 2026</p>
           </div>
-
-          <div style={{ borderBottom: "1px solid #e2e8f0", marginBottom: 24, display: "flex", gap: 4 }}>
-            <Tab active={tab === "budget"} label="ð° Budget Calculator" onClick={() => setTab("budget")} />
-            <Tab active={tab === "compare"} label="ð Rent vs. Buy" onClick={() => setTab("compare")} />
-            <Tab active={tab === "explore"} label="ð  Explore Neighborhoods" onClick={() => setTab("explore")} />
+          <div className="tabs">
+            <button className={`tab ${tab === "budget" ? "active" : ""}`} onClick={() => setTab("budget")}>Budget</button>
+            <button className={`tab ${tab === "compare" ? "active" : ""}`} onClick={() => setTab("compare")}>Rent vs. Buy</button>
+            <button className={`tab ${tab === "explore" ? "active" : ""}`} onClick={() => setTab("explore")}>Explore</button>
           </div>
-
           {tab === "budget" && <BudgetTab />}
           {tab === "compare" && <RentVsBuyTab />}
           {tab === "explore" && <ExplorerTab />}
-
-          <div style={{ marginTop: 32, padding: 16, background: "#f1f5f9", borderRadius: 8, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>
-            Data sourced March 2026. Property tax rates, mortgage rates, and maintenance costs are estimates and will vary by building. Consult a financial advisor and real estate attorney before making purchase decisions. Mortgage rates: 30yr ~6.30%, 15yr ~5.70% (Freddie Mac/Bankrate avg).
+          <div className="footer">
+            Property tax rates, mortgage rates, and maintenance costs are estimates and will vary by building. Consult a financial advisor and real estate attorney before making purchase decisions. Mortgage rates: 30yr ~6.30%, 15yr ~5.70%.
           </div>
         </div>
       );
